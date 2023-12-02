@@ -1,3 +1,5 @@
+This is my attempt at following along with the [Writing an Os in Rust](https://os.phil-opp.com/) - Second Edition series of blog posts.
+
 In order to create a bootable image:
 - Install bootimage
 ```
