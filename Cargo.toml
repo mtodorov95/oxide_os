@@ -11,9 +11,28 @@ bootloader = "0.9.23"
 volatile = "0.2.6"
 lazy_static = {version="1.0", features=["spin_no_std"]}
 spin = "0.5.2"
+x86_64 = "0.14.2"
+# Send data over serial port from our kernel to the host OS
+uart_16550 = "0.2.0"
+
+[[test]]
+name = "should_panic"
+harness = false
 
 # Removes the requirement for eh_personality lang item by disabling stack unwinding
 # and aborting instead
 [profile.dev]
 
 [profile.release]
+
+# Exit QEMU automatically when 'cargo test' finishes
+# The args are passed from bootimage to QEMU on test runs
+[package.metadata.bootimage]
+test-args = [
+    "-device", "isa-debug-exit,iobase=0xf4,iosize=0x04", "-serial", "stdio",
+    "-display", "none"
+]
+test-timeout = 300
+# Maps our custom exit code to exit code 0 so cargo test won't say tests failed
+# when they actually passed
+test-success-exit-code = 33 # (0x10 << 1) | 1
