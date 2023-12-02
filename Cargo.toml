@@ -8,6 +8,9 @@ edition = "2021"
 [dependencies]
 # Implements a basic BIOS bootloader without C dependencies
 bootloader = "0.9.23"
+volatile = "0.2.6"
+lazy_static = {version="1.0", features=["spin_no_std"]}
+spin = "0.5.2"
 
 # Removes the requirement for eh_personality lang item by disabling stack unwinding
 # and aborting instead

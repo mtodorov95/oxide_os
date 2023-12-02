@@ -10,30 +10,20 @@
 
 use core::panic::PanicInfo;
 
+mod vga_buffer;
+
 // Called on panic
 #[panic_handler]
-fn panic(_info: &PanicInfo) -> ! {
+fn panic(info: &PanicInfo) -> ! {
+    println!("{}", info);
     loop {}
 }
-
-static HELLO: &[u8] = b"Hello World!";
 
 // Preserves the actual name of the fundtion when going through the compiler
 // extern "C" - use the C calling convention instead
 // Linker looks for fn named _start
 #[no_mangle]
 pub extern "C" fn _start() -> ! {
-    // Get raw pointer
-    let vga_buffer = 0xb8000 as *mut u8;
-
-    for (i, &byte) in HELLO.iter().enumerate() {
-        // Write the string byte and color byte (0xb) to the vga_buffer
-        // Unsafe, because Rust can't prove that a pointer we created is valid
-        unsafe {
-            *vga_buffer.offset(i as isize * 2) = byte;
-            *vga_buffer.offset(i as isize * 2 + 1) = 0xb;
-        }
-    }
-
+    println!("Hello World{}", "!");
     loop {}
 }
