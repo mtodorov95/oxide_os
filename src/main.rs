@@ -7,6 +7,9 @@
 #![no_std]
 // Overwrite the standard entry point chain e.g. crt0 -> start > main
 #![no_main]
+// Enable testing in a no std environment
+#![feature(custom_test_frameworks)]
+#![test_runner(crate::test_runner)]
 
 use core::panic::PanicInfo;
 
@@ -26,4 +29,12 @@ fn panic(info: &PanicInfo) -> ! {
 pub extern "C" fn _start() -> ! {
     println!("Hello World{}", "!");
     loop {}
+}
+
+#[cfg(test)]
+fn test_runner(tests: &[&dyn Fn()]) {
+    println!("Running {} tests", tests.len());
+    for test in tests {
+        test();
+    }
 }
