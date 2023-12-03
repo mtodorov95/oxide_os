@@ -149,7 +149,13 @@ macro_rules! println {
 #[doc(hidden)]
 pub fn _print(args: fmt::Arguments) {
     use core::fmt::Write;
-    WRITER.lock().write_fmt(args).unwrap();
+    use x86_64::instructions::interrupts;
+    // Disable interrupts prior to printing to the vga_buff
+    // Prevents deadlocks from WRITER already being locker when 
+    // the interrupt handler tries to lock it.
+    interrupts::without_interrupts(|| {
+        WRITER.lock().write_fmt(args).unwrap();
+    });
 }
 
 #[test_case]
@@ -173,3 +179,19 @@ fn test_println_output() {
         assert_eq!(char::from(screen_char.ascii_character), c);
     }
 }
+
+//#[test_case]
+//fn test_println_output() {
+//    use core::fmt::Write;
+//    use x86_64::instructions::interrupts;
+//
+//    let s = "A single line test string";
+//    interrupts::without_interrupts(|| {
+//        let mut writer = WRITER.lock();
+//        writeln!(writer, "\n{}", s).expect("writeln failed");
+//        for (i, c) in s.chars().enumerate() {
+//            let screen_char = WRITER.lock().buffer.chars[BUFFER_HEIGHT - 2][i].read();
+//            assert_eq!(char::from(screen_char.ascii_character), c);
+//        }
+//    });
+//}

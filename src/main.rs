@@ -20,7 +20,7 @@ use oxide_os::println;
 #[panic_handler]
 fn panic(info: &PanicInfo) -> ! {
     println!("{}", info);
-    loop {}
+    oxide_os::hlt_loop();
 }
 
 #[cfg(test)]
@@ -38,16 +38,11 @@ pub extern "C" fn _start() -> ! {
 
     oxide_os::init();
 
-    fn stack_overflow(){
-        stack_overflow();
-    }
-
-    stack_overflow();
-
     #[cfg(test)]
     test_main();
     println!("Didn't crash");
-    loop {}
+    // Halt the CPU instead of running at 100% all the time
+    oxide_os::hlt_loop();
 }
 
 #[test_case]
