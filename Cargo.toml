@@ -19,6 +19,10 @@ uart_16550 = "0.2.0"
 name = "should_panic"
 harness = false
 
+[[test]]
+name = "stack_overflow"
+harness = false
+
 # Removes the requirement for eh_personality lang item by disabling stack unwinding
 # and aborting instead
 [profile.dev]

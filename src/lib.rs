@@ -6,11 +6,13 @@
 #![reexport_test_harness_main = "test_main"]
 
 use core::panic::PanicInfo;
+pub mod interrupts;
 pub mod serial;
 pub mod vga_buffer;
-pub mod interrupts;
+pub mod gdt;
 
 pub fn init() {
+    gdt::init();
     interrupts::init_idt();
 }
 
