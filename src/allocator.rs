@@ -7,11 +7,15 @@ use x86_64::{
     VirtAddr,
 };
 
+use self::bump::BumpAllocator;
+
+pub mod bump;
+
 pub const HEAP_START: usize = 0x_4444_4444_0000;
 pub const HEAP_SIZE: usize = 100 * 1024;
 
 #[global_allocator]
-static ALLOCATOR: LockedHeap = LockedHeap::empty();
+static ALLOCATOR: Locked<BumpAllocator> = Locked::new(BumpAllocator::new());
 
 pub fn init_heap(
     mapper: &mut impl Mapper<Size4KiB>,
@@ -38,4 +42,40 @@ pub fn init_heap(
     }
 
     Ok(())
+}
+
+// Allow for internal mutability for out allocators while maintaining
+// the same function signature as the linked_list_allocator
+// for easier refactoring
+pub struct Locked<A> {
+    inner: spin::Mutex<A>,
+}
+
+impl<A> Locked<A> {
+    pub const fn new(inner: A) -> Self {
+        Locked {
+            inner: spin::Mutex::new(inner),
+        }
+    }
+
+    pub fn lock(&self) -> spin::MutexGuard<A> {
+        self.inner.lock()
+    }
+}
+
+// Simple but inefficient
+fn align_up_slow(addr: usize, align: usize) -> usize {
+    let remainder = addr % align;
+    if remainder == 0 {
+        addr // Already aligned
+    } else {
+        addr - remainder + align
+    }
+}
+
+// Much faster.
+// Requires align to be a power of 2 - guaranteed by using GlobalAlloc and 
+// Layout
+fn align_up(addr: usize, align: usize) -> usize {
+    (addr + align - 1) & !(align - 1)
 }
