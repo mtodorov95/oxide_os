@@ -6,6 +6,7 @@
 #![reexport_test_harness_main = "test_main"]
 
 use core::panic::PanicInfo;
+extern crate alloc;
 
 #[cfg(test)]
 use bootloader::{entry_point, BootInfo};
@@ -14,6 +15,7 @@ pub mod interrupts;
 pub mod serial;
 pub mod vga_buffer;
 pub mod memory;
+pub mod allocator;
 
 pub fn init() {
     gdt::init();
