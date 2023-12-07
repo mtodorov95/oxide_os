@@ -13,10 +13,14 @@
 #![reexport_test_harness_main = "test_main"]
 
 extern crate alloc;
-use alloc::{boxed::Box, rc::Rc, vec, vec::Vec};
 use bootloader::{entry_point, BootInfo};
 use core::panic::PanicInfo;
-use oxide_os::{allocator, memory::BootInfoFrameAllocator, println, task::{simple_executor::SimpleExecutor, Task}};
+use oxide_os::{
+    allocator,
+    memory::BootInfoFrameAllocator,
+    println,
+    task::{keyboard, Task, executor::Executor},
+};
 
 // Called on panic
 #[cfg(not(test))]
@@ -45,15 +49,14 @@ fn kernel_main(boot_info: &'static BootInfo) -> ! {
     let mut frame_allocator = unsafe { BootInfoFrameAllocator::init(&boot_info.memory_map) };
     allocator::init_heap(&mut mapper, &mut frame_allocator).expect("Heap initialization failed");
 
-    let mut executor = SimpleExecutor::new();
-    executor.spawn(Task::new(example_task()));
-    executor.run();
-
     #[cfg(test)]
     test_main();
     println!("Didn't crash");
-    // Halt the CPU instead of running at 100% all the time
-    oxide_os::hlt_loop();
+
+    let mut executor = Executor::new();
+    executor.spawn(Task::new(example_task()));
+    executor.spawn(Task::new(keyboard::print_keypresses()));
+    executor.run()
 }
 
 #[test_case]
